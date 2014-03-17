@@ -17,12 +17,11 @@ Every other character in the source code is treated as comment.
 Interpreter
 -----------
 
-The state of the interpreter is defined as two memory arrays, one for all cells
-left from the current cell and one for all cells right of and including the
-current cell.
+The state of the interpreter consists of all memory cells left from the current
+cell, the current cell, and all cells to the right of the current cell.
 
 ```haskell
-data BFState = BFState {pointer :: Int} deriving (Show)
+type BFState = ([Char], Char, [Char])
 ```
 
 The interpreter itself is written using the [The StateT monad transformer ](http://hackage.haskell.org/package/transformers-0.3.0.0/docs/Control-Monad-Trans-State-Lazy.html#g:2) which provides many
