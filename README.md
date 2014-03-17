@@ -21,11 +21,15 @@ The state of the interpreter is defined as two memory arrays, one for all cells
 left from the current cell and one for all cells right of and including the
 current cell.
 
-    data BFState = BFState {pointer :: Int} deriving (Show)
+```haskell
+data BFState = BFState {pointer :: Int} deriving (Show)
+```
 
 The interpreter itself is written using the [The StateT monad transformer ](http://hackage.haskell.org/package/transformers-0.3.0.0/docs/Control-Monad-Trans-State-Lazy.html#g:2) which provides many
 useful functions for dealing with both IO and State transformations. This makes
 the implementation extremely concise (less than 30 lines in total).
 
-    type BFProg = StateT BFState IO ()
+```haskell
+type BFProg = StateT BFState IO ()
+```
 
