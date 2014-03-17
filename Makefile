@@ -6,7 +6,7 @@ bfhs: bfhs.hs
 	$(GHC) --make -o $@ $+
 
 run: bfhs
-	./bfhs hello.bf
+	./bfhs a.bf
 
 clean:
 	rm -f bfhs

@@ -1,32 +1,40 @@
 import Control.Monad.IO.Class
 import Control.Monad.Trans.State
+import Data.Char (chr,ord)
+import System.Environment (getArgs)
 
-data BFState = BFState {pointer :: Int} deriving (Show)
+data BFState = BFState {left :: [Char],
+                        current :: Char,
+                        right :: [Char]} deriving (Show)
 
 type BFProg = StateT BFState IO ()
 
+withCurrent :: (Char -> Char) -> BFProg
+withCurrent f = modify $ \(BFState l c r) -> BFState l (f c) r
+
 inc :: BFProg
-inc = modify $ \st -> BFState (pointer st + 1)
+inc = withCurrent (chr . succ . ord)
 
 dec :: BFProg
-dec = modify $ \st -> BFState (pointer st - 1)
+dec = withCurrent (chr . pred . ord)
 
-prin :: BFProg
-prin = do v <- get
-          liftIO $ print . pointer $ v
+putC :: BFProg
+putC = do v <- get
+          liftIO $ putChar . current $ v
 
-miniprog :: BFProg
-miniprog = do inc
-              inc
-              inc
-              prin
-              dec
-              prin
-              dec
-              prin
+parse :: String -> BFProg
+parse s = sequence_ $ map cmd s
+
+cmd :: Char -> BFProg
+cmd '+' = inc
+cmd '-' = dec
+cmd '.' = putC
+cmd _   = return ()
 
 main :: IO ()
-main = evalStateT miniprog (BFState 0)
+main = do (file:_) <- getArgs
+          code <- readFile file
+          evalStateT (parse code) (BFState [] (chr 0) [])
 
 -- newtype Prog m  a = Prog {runProg :: State -> m (State, a)}
 
