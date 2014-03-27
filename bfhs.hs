@@ -31,13 +31,17 @@ withCurrent f = do (l, c, r) <- get
                    put (l, c', r)
 
 bf :: BFProg -> BFThread
+bf Skip = return ()
 bf Inc = withCurrent $ return . chr . succ . ord
 bf Dec = withCurrent $ return . chr . pred . ord
 bf PutC = withCurrent $ \s -> putChar s >> return s
 bf GetC = withCurrent $ \_ -> getChar
 bf Next = get >>= \(l, c, r:rs) -> put (c:l, r, rs)
 bf Prev = get >>= \(l:ls, c, r) -> put (ls, l, c:r)
-bf Skip = return ()
+bf (Loop body) = do (_,c,_) <- get
+                    case c of
+                      '\0' -> return ()
+                      _    -> mapM_ bf (body ++ [Loop body])
 
 main :: IO ()
 main = do (file:_) <- getArgs
