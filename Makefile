@@ -9,4 +9,4 @@ run: bfhs
 	./bfhs a.bf
 
 clean:
-	rm -f bfhs
+	rm -f bfhs bfhs.o bfhs.hi
