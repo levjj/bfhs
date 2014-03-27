@@ -11,6 +11,10 @@ type BFState = ([Char], Char, [Char])
 -- A Brainfuck program is simply a State Transformation Monad
 type BFThunk = StateT BFState IO ()
 
+-- Helper function to make the parsing easier
+($>) :: Functor f => f a -> b -> f b
+($>) = flip $ fmap . const
+
 -- Helper function to do something with the current cell (inc. IO)
 withCurrent :: (Char -> IO Char) -> BFThunk
 withCurrent f = do (l, c, r) <- get
@@ -19,13 +23,13 @@ withCurrent f = do (l, c, r) <- get
 
 -- Brainfuck parser and thunk generator
 bf :: Parser BFThunk
-bf =  (noneOf "+-.,><[]" >> return (return ()))
-  <|> (char '+' >> return (withCurrent $ return . chr . succ . ord))
-  <|> (char '-' >> return (withCurrent $ return . chr . pred . ord))
-  <|> (char '.' >> return (withCurrent $ \s -> putChar s >> return s))
-  <|> (char ',' >> return (withCurrent $ \_ -> getChar))
-  <|> (char '>' >> return (get >>= \(l, c, r:rs) -> put (c:l, r, rs)))
-  <|> (char '<' >> return (get >>= \(l:ls, c, r) -> put (ls, l, c:r)))
+bf =  (noneOf "+-.,><[]" $> return ())
+  <|> (char '+' $> withCurrent (return . chr . succ . ord))
+  <|> (char '-' $> withCurrent (return . chr . pred . ord))
+  <|> (char '.' $> withCurrent (\s -> putChar s >> return s))
+  <|> (char ',' $> withCurrent (\_ -> getChar))
+  <|> (char '>' $> (get >>= \(l, c, r:rs) -> put (c:l, r, rs)))
+  <|> (char '<' $> (get >>= \(l:ls, c, r) -> put (ls, l, c:r)))
   <|> do char '['
          body <- many1 bf
          char ']'
