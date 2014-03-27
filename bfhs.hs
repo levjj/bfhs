@@ -2,26 +2,46 @@ import Data.Char (chr,ord)
 import System.Environment (getArgs)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.State
+import Text.Parsec
+import Text.Parsec.String (Parser)
+
+data BFProg = Inc | Dec | PutC | GetC | Next | Prev | Loop [BFProg] | Skip
+
+-- Brainfuck Parser
+bfParser :: Parser BFProg
+bfParser =  (noneOf "+-.,><[]" >> return Skip)
+        <|> (char '+' >> return Inc)
+        <|> (char '-' >> return Dec)
+        <|> (char '.' >> return PutC)
+        <|> (char ',' >> return GetC)
+        <|> (char '>' >> return Next)
+        <|> (char '<' >> return Prev)
+        <|> do char '['
+               s <- many1 bfParser
+               char ']'
+               return $ Loop s
 
 type BFState = ([Char], Char, [Char])
 
-type BFProg = StateT BFState IO ()
+type BFThread = StateT BFState IO ()
 
-withCurrent :: (Char -> IO Char) -> BFProg
+withCurrent :: (Char -> IO Char) -> BFThread
 withCurrent f = do (l, c, r) <- get
                    c' <- liftIO (f c)
                    put (l, c', r)
 
-bf :: Char -> BFProg
-bf '+' = withCurrent $ return . chr . succ . ord
-bf '-' = withCurrent $ return . chr . pred . ord
-bf '.' = withCurrent $ \s -> putChar s >> return s
-bf ',' = withCurrent $ \_ -> getChar
-bf '<' = get >>= \(l:ls, c, r) -> put (ls, l, c:r)
-bf '>' = get >>= \(l, c, r:rs) -> put (c:l, r, rs)
-bf  _  = return ()
+bf :: BFProg -> BFThread
+bf Inc = withCurrent $ return . chr . succ . ord
+bf Dec = withCurrent $ return . chr . pred . ord
+bf PutC = withCurrent $ \s -> putChar s >> return s
+bf GetC = withCurrent $ \_ -> getChar
+bf Next = get >>= \(l, c, r:rs) -> put (c:l, r, rs)
+bf Prev = get >>= \(l:ls, c, r) -> put (ls, l, c:r)
+bf Skip = return ()
 
 main :: IO ()
 main = do (file:_) <- getArgs
           code <- readFile file
-          evalStateT (mapM_ bf code) ([], '\0', repeat '\0')
+          case parse (many1 bfParser) "" code of
+            Left err -> print $ "Error while parsing: " ++ show err
+            Right prog -> evalStateT (mapM_ bf prog) ([], '\0', repeat '\0')
