@@ -24,11 +24,35 @@ cell, the current cell, and all cells to the right of the current cell.
 type BFState = ([Char], Char, [Char])
 ```
 
-The interpreter itself is written using the [The StateT monad transformer ](http://hackage.haskell.org/package/transformers-0.3.0.0/docs/Control-Monad-Trans-State-Lazy.html#g:2) which provides many
-useful functions for dealing with both IO and State transformations. This makes
-the implementation extremely concise (less than 30 lines in total).
+In contrast to other Brainfuck interpreters, the source code is parsed first
+using the amazing parser generator [Parsec](http://legacy.cs.uu.nl/daan/parsec.html).
+This makes loops trivial to implement.
+
+The parser does not create an abstract syntax tree. Instead, it created thunks
+which are instances of the [The StateT monad transformer ](http://hackage.haskell.org/package/transformers-0.3.0.0/docs/Control-Monad-Trans-State-Lazy.html#g:2).
 
 ```haskell
-type BFProg = StateT BFState IO ()
+type BFThunk = StateT BFState IO ()
 ```
 
+This makes it possible to deal with both IO and State transformations at the
+same time and makes the implementation extremely concise (45 lines including
+comments).
+
+Compiling, Running and Testing
+------------------------------
+
+    $ make
+    $ ./bfhs a.bf
+    $ ./bfhs hello.bf
+    $ ./bfhs squares.bf
+
+Acknowledgements
+----------------
+
+The blog post about [Haskell](http://haupz.blogspot.com/2012/10/haskell.html)
+by Michael Haupt inspired me to also implement a Brainfuck interpreter in Haskell.
+His implementation does not use the IO monad and as such the output of the
+interpreter Brainfuck program is only visible after the program terminates.
+However, which implementation is easier to understand probably depends on the
+reader.
