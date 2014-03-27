@@ -3,7 +3,6 @@ import System.Environment (getArgs)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.State
 import Text.Parsec
-import Text.Parsec.String (Parser)
 
 -- Brainfuck State
 type BFState = ([Char], Char, [Char])
@@ -22,7 +21,7 @@ withCurrent f = do (l, c, r) <- get
                    put (l, c', r)
 
 -- Brainfuck parser and thunk generator
-bf :: Parser BFThunk
+bf :: Parsec String () BFThunk
 bf =  (noneOf "+-.,><[]" $> return ())
   <|> (char '+' $> withCurrent (return . chr . succ . ord))
   <|> (char '-' $> withCurrent (return . chr . pred . ord))
