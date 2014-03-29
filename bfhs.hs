@@ -4,17 +4,17 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.State
 import Text.Parsec
 
--- Brainfuck State
+-- Brainfuck State (cells on the left, current cell, cells on the right)
 type BFState = ([Char], Char, [Char])
 
--- A Brainfuck program is simply a State Transformation Monad
+-- A Brainfuck program is simply a State Transformation monad with IO
 type BFThunk = StateT BFState IO ()
 
 -- Helper function to make the parsing easier
 ($>) :: Functor f => f a -> b -> f b
 ($>) = flip $ fmap . const
 
--- Helper function to do something with the current cell (inc. IO)
+-- Helper function to do something with the current cell (including IO)
 withCurrent :: (Char -> IO Char) -> BFThunk
 withCurrent f = do (left, cur, right) <- get
                    cur' <- liftIO (f cur)
