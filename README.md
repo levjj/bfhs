@@ -62,14 +62,14 @@ withCurrent f = do (left, cur, right) <- get
 
 The most important function is actually a Parsec monad which takes care of
 parsing and returns instances of `BFThunk`, i.e. it returns state
-transformation monads that use IO. The operations "+", "-", "." and "," can be
-expressed with the `withCurrent` helper function. The operations ">" and "<"
+transformation monads that use IO. The operations `+`, `-`, `.` and `,` can be
+expressed with the `withCurrent` helper function. The operations `>` and `<`
 simple change the state by shifting the current cell either to the left or to
-the right. The loop operator "[" benefits from parsing with Parsec because it
-matches the brackets "[" and "]" and `many1 bf` then simply returns a list of
-BFThunk monads. The loop header then simply checks for the current memory value
-and if it is something other than 0, it returns a recursive sequence of state
-transformations consisting of the loop body and the loop header again.
+the right. The loop operator `[` benefits from parsing with Parsec because it
+matches the brackets `[` and `]` and returns the Brainfuck program in between
+as a list of `BFThunk` monads. The loop header then simply checks for the
+current memory cell and if it is something other than 0 returns a sequence of
+state transformations consisting of the loop body and the loop header again.
 
 ```haskell
 bf :: Parsec String () BFThunk
