@@ -29,7 +29,7 @@ using the amazing parser generator [Parsec](http://legacy.cs.uu.nl/daan/parsec.h
 This makes loops trivial to implement.
 
 The parser does not create an abstract syntax tree. Instead, it created thunks
-which are instances of the [The StateT monad transformer ](http://hackage.haskell.org/package/transformers-0.3.0.0/docs/Control-Monad-Trans-State-Lazy.html#g:2).
+which are instances of the [StateT monad transformer](http://hackage.haskell.org/package/transformers-0.3.0.0/docs/Control-Monad-Trans-State-Lazy.html#g:2).
 
 ```haskell
 type BFThunk = StateT BFState IO ()
