@@ -16,16 +16,16 @@ type BFThunk = StateT BFState IO ()
 
 -- Helper function to do something with the current cell (inc. IO)
 withCurrent :: (Char -> IO Char) -> BFThunk
-withCurrent f = do (l, c, r) <- get
-                   c' <- liftIO (f c)
-                   put (l, c', r)
+withCurrent f = do (left, cur, right) <- get
+                   cur' <- liftIO (f cur)
+                   put (left, cur', right)
 
 -- Brainfuck parser and thunk generator
 bf :: Parsec String () BFThunk
 bf =  (noneOf "+-.,><[]" $> return ())
   <|> (char '+' $> withCurrent (return . chr . succ . ord))
   <|> (char '-' $> withCurrent (return . chr . pred . ord))
-  <|> (char '.' $> withCurrent (\s -> putChar s >> return s))
+  <|> (char '.' $> withCurrent (\c -> putChar c >> return c))
   <|> (char ',' $> withCurrent (\_ -> getChar))
   <|> (char '>' $> (get >>= \(l, c, r:rs) -> put (c:l, r, rs)))
   <|> (char '<' $> (get >>= \(l:ls, c, r) -> put (ls, l, c:r)))
